@@ -156,7 +156,7 @@ local function CreateCloseButton(frame)
   local closeButton = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
   closeButton:SetWidth(32) -- Button size
   closeButton:SetHeight(32) -- Button size
-  closeButton:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -5, -5) -- Position at the top right
+  closeButton:SetPoint("TOPRIGHT", frame, "TOPRIGHT", 2, 2) -- Position at the top right
 
   -- Set textures if you want to customize the appearance
   closeButton:SetNormalTexture("Interface/Buttons/UI-Panel-MinimizeButton-Up")
@@ -721,7 +721,14 @@ SlashCmdList["LOOTBLARE"] = function(msg)
     lb_print("Auto closing: " .. (FrameAutoClose and "on" or "off"))
     lb_print("Master Looter: " .. (LootBlare.masterLooter or "unknown"))
   elseif msg == "import" then
-    LootBlareImportFrame:Show()
+    if LootBlareImportFrame:IsShown() then
+      LootBlareImportFrame:Hide()
+    else
+      if LootBlareMSPlusFrame:IsShown() then
+        LootBlareMSPlusFrame:Hide()
+      end
+      LootBlareImportFrame:Show()
+    end
   elseif string.find(msg, "time") then
     local _,_,newDuration = string.find(msg, "time (%d+)")
     newDuration = tonumber(newDuration)
@@ -775,6 +782,9 @@ SlashCmdList["LOOTBLARE"] = function(msg)
     if LootBlareMSPlusFrame:IsShown() then
       LootBlareMSPlusFrame:Hide()
     else
+      if LootBlareImportFrame:IsShown() then
+        LootBlareImportFrame:Hide()
+      end
       LootBlareMSPlusFrame:Show()
     end
   else

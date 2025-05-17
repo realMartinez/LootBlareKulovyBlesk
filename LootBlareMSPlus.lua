@@ -23,6 +23,35 @@ local function IsPlayerInRaid(name)
     return false
 end
 
+-- Function to check if a raid member is online
+local function IsRaidMemberOnlineByName(playerName)
+    for i = 1, GetNumRaidMembers() do
+        local name, _, _, _, _, _, _, _, _, _, _, _, _ = GetRaidRosterInfo(i)
+        if name == playerName then
+            if UnitIsConnected("raid" .. i) then
+                return true
+            else
+                return false
+            end
+        end
+    end
+    return false
+end
+
+local function IsSenderMasterLooter(sender)
+  local lootMethod, masterLooterPartyID = GetLootMethod()
+  if lootMethod == "master" and masterLooterPartyID then
+    if masterLooterPartyID == 0 then
+      return sender == UnitName("player")
+    else
+      local senderUID = "party" .. masterLooterPartyID
+      local masterLooterName = UnitName(senderUID)
+      return masterLooterName == sender
+    end
+  end
+  return false
+end
+
 ---------------------------------------------------------------------
 --                           MS+1 Frame Creation
 ---------------------------------------------------------------------
@@ -64,9 +93,14 @@ local function CreateRaidRow(parent, index, name, points)
     })
 
     if IsPlayerInRaid(name) then
-        row:SetBackdropColor(0, 0, 0, 0.7) -- default dark
+        if IsRaidMemberOnlineByName(name) then
+            row:SetBackdropColor(0, 0, 0, 0.7) -- default dark          
+        else
+            row:SetBackdropColor(1.0, 1.0, 0.0, 0.7) -- yellow
+        end
+
     else
-        row:SetBackdropColor(0.6, 0, 0, 0.7) -- red tone
+        row:SetBackdropColor(0.6, 0, 0, 0.7) -- red
     end
 
     local nameText = row:CreateFontString(nil, "ARTWORK", "GameFontNormal")
@@ -104,21 +138,23 @@ local function CreateRaidRow(parent, index, name, points)
     downButton:SetPoint("RIGHT", -10, -6)
 
     upButton:SetScript("OnClick", function()
-        if LootBlare:IsSenderMasterLooter(UnitName("player")) == false then
+        if IsSenderMasterLooter(UnitName("player")) == false then
             PlaySoundFile("Sound\\Interface\\Error.wav")
             return 
         end
         ChangePointsByName(name, 1)
-        PlaySoundFile("Sound\\Interface\\gsTitleOptionOK.wav")
+        LootBlare:SendMSPointSync()
+        PlaySoundFile("Sound\\interface\\iUiInterfaceButtonA.wav")
     end)
 
     downButton:SetScript("OnClick", function()
-        if LootBlare:IsSenderMasterLooter(UnitName("player")) == false then
+        if IsSenderMasterLooter(UnitName("player")) == false then
             PlaySoundFile("Sound\\Interface\\Error.wav")
             return 
         end
         ChangePointsByName(name, -1)
-        PlaySoundFile("Sound\\Interface\\gsTitleOptionOK.wav")
+        LootBlare:SendMSPointSync()
+        PlaySoundFile("Sound\\interface\\iUiInterfaceButtonA.wav")
     end)
 
     row:Show()
